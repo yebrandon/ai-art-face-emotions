@@ -1,11 +1,10 @@
 import datasets
 import os
-import re
 import csv
 import numpy as np
 from deepface import DeepFace
 
-IMGS_DIR_PATH = "images/"
+IMAGES_DIR_PATH = "images/"
 SUBSET_NAME = "2m_random_50k"
 results_count = {
     "angry": 0,
@@ -27,12 +26,12 @@ dataset = datasets.load_dataset(
 )
 
 # Create images folder if it doesn't already exist
-if not (os.path.exists(IMGS_DIR_PATH)):
-    os.mkdir(IMGS_DIR_PATH)
+if not (os.path.exists(IMAGES_DIR_PATH)):
+    os.mkdir(IMAGES_DIR_PATH)
 
 # Save and label each image in the dataset if face is detected
 print("Attempting to analyze " + str(len(dataset)) + " images...")
-with open("results.csv", "w", newline="") as csv_file:
+with open(file="image_results.csv", mode="w", encoding="utf-8", newline="") as csv_file:
     writer = csv.writer(csv_file)
 
     for i in range(len(dataset)):
@@ -51,13 +50,7 @@ with open("results.csv", "w", newline="") as csv_file:
             results_count["several_faces_found"] += 1
             continue
 
-        # Remove problematic characters and construct file path
-        file_name = re.sub(
-            "[^a-zA-Z0-9_]+", "", str(i) + "_" + dataset[i]["prompt"].replace(" ", "_")
-        )
-        file_path = (IMGS_DIR_PATH + file_name)[:200] + ".jpg"
-
-        # Write dominant emotion and emotion confidences for each image file to CSV
+        # Write prompt, dominant emotion, and emotion confidences for each image file to CSV
         emotion_confidences = result[0]["emotion"]
         dom_emotion = result[0]["dominant_emotion"]
         dom_emotion_confidence = emotion_confidences[dom_emotion]
@@ -65,17 +58,25 @@ with open("results.csv", "w", newline="") as csv_file:
         results_count["total_images_successful"] += 1
 
         writer.writerow(
-            [file_name, dom_emotion, dom_emotion_confidence, emotion_confidences]
+            [
+                i,
+                dataset[i]["prompt"],
+                dom_emotion,
+                dom_emotion_confidence,
+                emotion_confidences,
+            ]
         )
 
+        # Save image in images directory
+        file_path = IMAGES_DIR_PATH + str(i) + ".jpg"
         PIL_image.save(file_path)
         print("Saved " + file_path)
 
-# Write tally of emotions detected to CSV
+# Write tally of images emotions detected to CSV
 print("Writing summary of results...")
-with open("results_summary.csv", "w", newline="") as csv_file:
+with open(file="image_results_summary.csv", mode="w", newline="") as csv_file:
     writer = csv.writer(csv_file)
     for key in results_count.keys():
         writer.writerow([key, results_count[key]])
 
-print("Done! " + str(len(os.listdir(IMGS_DIR_PATH))) + " images saved.")
+print("Done! " + str(results_count["total_images_successful"]) + " images saved.")
