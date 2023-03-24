@@ -4,10 +4,13 @@
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import csv
 
+RESULTS_DIR_PATH = "results/"
 results_count = {"positive": 0, "neutral": 0, "negative": 0, "total_prompts": 0}
 
 # Analyze each prompt from the image results csv file
-with open(file="image_results.csv", mode="r", encoding="utf-8") as img_csv_file:
+with open(
+    file=RESULTS_DIR_PATH + "image_results.csv", mode="r", encoding="utf-8"
+) as img_csv_file:
     with open(
         file="prompt_results.csv", mode="w", encoding="utf-8", newline=""
     ) as prompt_csv_file:
@@ -37,7 +40,9 @@ with open(file="image_results.csv", mode="r", encoding="utf-8") as img_csv_file:
 
 # Write tally of prompt sentiments detected to CSV
 print("Writing summary of results...")
-with open(file="prompt_results_summary.csv", mode="w", newline="") as csv_file:
+with open(
+    file=RESULTS_DIR_PATH + "prompt_results_summary.csv", mode="w", newline=""
+) as csv_file:
     writer = csv.writer(csv_file)
     for key in results_count.keys():
         writer.writerow([key, results_count[key]])

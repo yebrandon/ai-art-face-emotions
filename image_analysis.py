@@ -4,6 +4,7 @@ import csv
 import numpy as np
 from deepface import DeepFace
 
+RESULTS_DIR_PATH = "results/"
 IMAGES_DIR_PATH = "images/"
 SUBSET_NAME = "2m_random_50k"
 results_count = {
@@ -25,13 +26,17 @@ dataset = datasets.load_dataset(
     path="poloclub/diffusiondb", name=SUBSET_NAME, split="train"
 )
 
-# Create images folder if it doesn't already exist
+# Create images and results folders if they don't already exist
 if not (os.path.exists(IMAGES_DIR_PATH)):
     os.mkdir(IMAGES_DIR_PATH)
+if not (os.path.exists(RESULTS_DIR_PATH)):
+    os.mkdir(RESULTS_DIR_PATH)
 
 # Save and label each image in the dataset if face is detected
 print("Attempting to analyze " + str(len(dataset)) + " images...")
-with open(file="image_results.csv", mode="w", encoding="utf-8", newline="") as csv_file:
+with open(
+    file=RESULTS_DIR_PATH + "image_results.csv", mode="w", encoding="utf-8", newline=""
+) as csv_file:
     writer = csv.writer(csv_file)
 
     for i in range(len(dataset)):
@@ -74,7 +79,9 @@ with open(file="image_results.csv", mode="w", encoding="utf-8", newline="") as c
 
 # Write tally of images emotions detected to CSV
 print("Writing summary of results...")
-with open(file="image_results_summary.csv", mode="w", newline="") as csv_file:
+with open(
+    file=RESULTS_DIR_PATH + "image_results_summary.csv", mode="w", newline=""
+) as csv_file:
     writer = csv.writer(csv_file)
     for key in results_count.keys():
         writer.writerow([key, results_count[key]])
